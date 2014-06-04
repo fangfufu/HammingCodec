@@ -1,14 +1,14 @@
 CFLAGS = -std=gnu99 -Wall -Wextra -O2 -pedantic
 
 LDFLAGS =
-COMMON_SOURCES =
+COMMON_SOURCES = fec.c
 COMMON_OBJECTS = $(COMMON_SOURCES:.c=.o)
 INSTALL_PATH = /usr/local/bin
 EXECUTABLE = fec
 
 all: $(EXECUTABLE)
 
-fec: encoder.o fec.c $(COMMON_OBJECTS)
+fec: encoder.o $(COMMON_OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 .PHONY: clean
