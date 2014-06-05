@@ -4,11 +4,11 @@ LDFLAGS =
 COMMON_SOURCES = fec.c
 COMMON_OBJECTS = $(COMMON_SOURCES:.c=.o)
 INSTALL_PATH = /usr/local/bin
-EXECUTABLE = fec
+EXECUTABLE = HammingCodec
 
 all: $(EXECUTABLE)
 
-fec: encoder.o $(COMMON_OBJECTS)
+HammingCodec: HammingCodec.o $(COMMON_OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 .PHONY: clean

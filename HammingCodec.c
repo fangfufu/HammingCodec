@@ -1,6 +1,6 @@
 /**
- * @file unformatter.c
- * @brief C-unformatter -- removes the whitespace and comment in your C code
+ * @file HammingCodec.c
+ * @brief Use [8,4] Hamming Code to encode your data
  */
 
 #include <ctype.h>
@@ -14,12 +14,12 @@
 #include "fec.h"
 
 /**
- * @brief rip stuff from an input stream, output to another stream.
+ * @brief process stuff from an input stream, output to another stream.
  */
 void process(FILE * input, FILE * output);
 
 /**
- * @brief rip stuff from a file.
+ * @brief process stuff from a file.
  */
 int process_file(char *filename);
 
@@ -28,13 +28,18 @@ int process_file(char *filename);
  */
 void print_help();
 
+int DECODE = 0;
+
 int main(int argc, char *const *argv)
 {
     int c;
     int main_loop = 0;
 
-    while ((c = getopt(argc, argv, "chi:o:")) != -1) {
+    while ((c = getopt(argc, argv, "dh")) != -1) {
         switch (c) {
+            case 'd':
+                DECODE = 1;
+                break;
             case 'h':
                 print_help();
                 break;
@@ -131,9 +136,19 @@ void process(FILE * input, FILE * output)
     /* Loop through all characters */
     while ((c = fgetc(input)) != EOF) {
         /* ------------------ Put stuff to the output -----------------------*/
-        encode(c, &byteA, &byteB);
-        fputc(byteA, output);
-        fputc(byteB, output);
+        if (!DECODE) {
+            encode(c, &byteA, &byteB);
+            fputc(byteA, output);
+            fputc(byteB, output);
+        } else {
+            int d = fgetc(input);
+            if (d == EOF) {
+                fprintf(stderr, "Unexpectedly reached the end of file!\n");
+                return;
+            } else {
+                fputc(decode(c ,d), output);
+            }
+        }
     }
 }
 
@@ -144,6 +159,7 @@ void print_help()
     puts("");
     puts("The output file name is the input file name appended with \".fec\"");
     puts("Options");
+    puts("\t-d\t\tdecode a file");
     puts("\t-h\t\tshow this help text and exit");
     puts("");
     exit(0);

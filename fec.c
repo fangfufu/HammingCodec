@@ -1,6 +1,5 @@
 #include "fec.h"
 #include <stdio.h>
-// #define DBG
 /*
  H =
  0 1 1 1 | 1 0 0 0
@@ -48,11 +47,26 @@ static uint8_t H[] =
     0xE1
 };
 
+/**
+ * @brief transposed parity matrix
+ */
+static uint8_t HT[] =
+{
+    0x7,
+    0xB,
+    0xD,
+    0xE,
+    0x8,
+    0x4,
+    0x2,
+    0x1
+};
+
 
 #define H_ROW       4
+#define HT_ROW      8
 #define G_ROW       8
 
-#ifdef DBG
 static void binary_print(uint8_t input)
 {
     for (int i = 7; i >= 0; i--) {
@@ -64,8 +78,10 @@ static void binary_print(uint8_t input)
     }
     fputc('\n', stderr);
 }
-#endif
 
+/**
+ * @brief XOR all the bits in a byte
+ */
 static uint8_t self_xor(uint8_t input)
 {
     uint8_t result = 0;
@@ -86,7 +102,7 @@ static uint8_t m_mul(uint8_t *matrix, uint8_t vector, int m_row)
         temp = matrix[i] & vector;
         result |= (self_xor(temp) << (m_row - i - 1));
     }
-#ifdef DBG
+#ifdef MUL_DBG
     binary_print(vector);
     binary_print(result);
 #endif
@@ -98,18 +114,44 @@ void encode(int input, uint8_t *outByteA, uint8_t *outByteB)
     uint8_t inByteA = (input >> 4) & 0xf;
     uint8_t inByteB = input & 0xf;
 
-#ifdef DBG
+#ifdef ENC_DBG
     printf("inByteA: %x\n", inByteA);
 #endif
     *outByteA = m_mul(G, inByteA, G_ROW);
 
-#ifdef DBG
+#ifdef ENC_DBG
     printf("inByteB: %x\n", inByteB);
 #endif
     *outByteB = m_mul(G, inByteB, G_ROW);
 }
 
+static uint8_t correct(uint8_t inByte, uint8_t syndrome)
+{
+    for (int i = 0; i < HT_ROW; i++) {
+        if (syndrome == HT[i]) {
+            fprintf(stderr, "Error detected, syndrome: %x\n", syndrome);
+            binary_print(syndrome);
+            return inByte ^ (1 << (HT_ROW - 1 - i));
+        }
+    }
+    fprintf(stderr, "Uncorrectable error detected, syndrome: %x \n", syndrome);
+    binary_print(syndrome);
+    return inByte;
+}
+
 uint8_t decode(uint8_t inByteA, uint8_t inByteB)
 {
-    
+    uint8_t parityA = m_mul(H, inByteA, H_ROW);
+    uint8_t parityB = m_mul(H, inByteB, H_ROW);
+
+    if (parityA) {
+        inByteA = correct(inByteA, parityA);
+    }
+
+    if (parityB) {
+        inByteB = correct(inByteB, parityB);
+    }
+
+    return ((inByteA & 0xf0) << 4) | (inByteB & 0xf0);
 }
+
