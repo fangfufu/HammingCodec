@@ -99,9 +99,17 @@ int process_file(char *filename)
     }
 
     /* Not very safe, but hey, YOLO */
-    char *new_filename = (char*) malloc(strlen(filename) + 4);
-    strcpy(new_filename, filename);
-    strcat(new_filename, ".fec");
+    char *new_filename;
+    if (!DECODE) {
+        new_filename = (char*) malloc(strlen(filename) + 5);
+        strcpy(new_filename, filename);
+        strcat(new_filename, ".fec");
+    } else {
+        int old_strlen = strlen(filename);
+        new_filename = (char*) malloc(old_strlen);
+        strncpy(new_filename, filename, old_strlen - 3);
+        new_filename[old_strlen - 4] = '\0';
+    }
 
     if ((input = fopen(new_filename, "w")) == NULL) {
         fprintf(stderr, "Cannot open input file %s: %s\n",
@@ -155,12 +163,16 @@ void process(FILE * input, FILE * output)
 void print_help()
 {
     puts("Usage:\tfec [options...] [input files...]");
-    puts("Encode your file using [8, 4] extended binary Hamming Code");
+    puts("Encode/decode your file using [8, 4] extended binary Hamming Code");
     puts("");
-    puts("The output file name is the input file name appended with \".fec\"");
     puts("Options");
     puts("\t-d\t\tdecode a file");
     puts("\t-h\t\tshow this help text and exit");
     puts("");
+    puts("In encoding mode the output filename is the input file name");
+    puts("appended with \".fec\"");
+    puts("");
+    puts("In decoding mode, the \".fec\" extension is removed, and the");
+    puts("existing file will be overwritten!");
     exit(0);
 }

@@ -129,12 +129,14 @@ static uint8_t correct(uint8_t inByte, uint8_t syndrome)
 {
     for (int i = 0; i < HT_ROW; i++) {
         if (syndrome == HT[i]) {
-            fprintf(stderr, "Error detected, syndrome: %x\n", syndrome);
+            fprintf(stderr, "Single bit flip detected, syndrome: 0x%02x\n",
+                    syndrome);
             binary_print(syndrome);
             return inByte ^ (1 << (HT_ROW - 1 - i));
         }
     }
-    fprintf(stderr, "Uncorrectable error detected, syndrome: %x \n", syndrome);
+    fprintf(stderr, "Uncorrectable error detected, syndrome: 0x%02x \n",
+            syndrome);
     binary_print(syndrome);
     return inByte;
 }
@@ -152,6 +154,6 @@ uint8_t decode(uint8_t inByteA, uint8_t inByteB)
         inByteB = correct(inByteB, parityB);
     }
 
-    return ((inByteA & 0xf0) << 4) | (inByteB & 0xf0);
+    return ((inByteA & 0xf0) | (inByteB & 0xf0) >> 4);
 }
 
