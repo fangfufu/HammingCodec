@@ -129,8 +129,9 @@ static uint8_t correct(uint8_t inByte, uint8_t syndrome)
 {
     for (int i = 0; i < HT_ROW; i++) {
         if (syndrome == HT[i]) {
-            fprintf(stderr, "Single bit flip detected, syndrome: 0x%02x\n",
-                    syndrome);
+            fprintf(stderr,
+                    "Single bit flip detected, bit: %d syndrome: 0x%02x\n",
+                    i ,syndrome);
             binary_print(syndrome);
             return inByte ^ (1 << (HT_ROW - 1 - i));
         }
