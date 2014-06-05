@@ -1,25 +1,27 @@
 #include "fec.h"
 #include <stdio.h>
 /*
- H =
- 0 1 1 1 | 1 0 0 0
- 1 0 1 1 | 0 1 0 0
- 1 1 0 1 | 0 0 1 0
- 1 1 1 0 | 0 0 0 1
-*/
+ * This is the parity checking matrix we are using.
+ * H =
+ * 0 1 1 1 | 1 0 0 0*
+ * 1 0 1 1 | 0 1 0 0
+ * 1 1 0 1 | 0 0 1 0
+ * 1 1 1 0 | 0 0 0 1
+ *
+ */
 
-/*
- G =
- 1 0 0 0
- 0 1 0 0
- 0 0 1 0
- 0 0 0 1
- -------
- 0 1 1 1
- 1 0 1 1
- 1 1 0 1
- 1 1 1 0
-*/
+/* This is the generator matrix we are using
+ * G =
+ * 1 0 0 0
+ * 0 1 0 0
+ * 0 0 1 0
+ * 0 0 0 1
+ * -------
+ * 0 1 1 1
+ * 1 0 1 1
+ * 1 1 0 1
+ * 1 1 1 0
+ */
 
 /**
  * @brief generator matrix
@@ -67,6 +69,9 @@ static uint8_t HT[] =
 #define HT_ROW      8
 #define G_ROW       8
 
+/**
+ * @brief print a byte in binary format
+ */
 static void binary_print(uint8_t input)
 {
     for (int i = 7; i >= 0; i--) {
@@ -125,6 +130,9 @@ void encode(int input, uint8_t *outByteA, uint8_t *outByteB)
     *outByteB = m_mul(G, inByteB, G_ROW);
 }
 
+/**
+ * @brief look up the syndrome table and correct for error
+ */
 static uint8_t correct(uint8_t inByte, uint8_t syndrome)
 {
     for (int i = 0; i < HT_ROW; i++) {
