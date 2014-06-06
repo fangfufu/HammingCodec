@@ -28,7 +28,15 @@ int process_file(char *filename);
  */
 void print_help();
 
-int DECODE = 0;
+/**
+ * @brief decode mode flag indicator
+ */
+static int DECODE = 0;
+
+/**
+ * @brief file position indicator
+ */
+long FILE_POS = 0;
 
 int main(int argc, char *const *argv)
 {
@@ -149,6 +157,7 @@ void process(FILE * input, FILE * output)
             fputc(byteA, output);
             fputc(byteB, output);
         } else {
+            FILE_POS = ftell(input);
             int d = fgetc(input);
             if (d == EOF) {
                 fprintf(stderr, "Unexpectedly reached the end of file!\n");

@@ -1,5 +1,9 @@
-#include "fec.h"
 #include <stdio.h>
+
+#include "HammingCodec.h"
+
+#include "fec.h"
+
 /*
  * This is the parity checking matrix we are using.
  * H =
@@ -138,14 +142,14 @@ static uint8_t correct(uint8_t inByte, uint8_t syndrome)
     for (int i = 0; i < HT_ROW; i++) {
         if (syndrome == HT[i]) {
             fprintf(stderr,
-                    "Single bit flip detected, bit: %d syndrome: 0x%02x\n",
-                    i ,syndrome);
-            binary_print(syndrome);
+                    "Single bit flip detected, byte: %ld, bit: %d\n",
+                    FILE_POS, i+1);
             return inByte ^ (1 << (HT_ROW - 1 - i));
         }
     }
-    fprintf(stderr, "Uncorrectable error detected, syndrome: 0x%02x \n",
-            syndrome);
+    fprintf(stderr,
+            "Uncorrectable error detected, byte: %ld, syndrome: 0x%02x\n",
+            FILE_POS, syndrome);
     binary_print(syndrome);
     return inByte;
 }
